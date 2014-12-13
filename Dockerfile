@@ -1,11 +1,13 @@
 # docker container for Drupal 
-# Ubuntu 14.04 +mysql+apache+ tools + drupal
+# Ubuntu 12.04 (for Drupal6 with older php)
+#  +apache+ tools + drupal (no mysql)
 #
 # VERSION       1
 # DOCKER-VERSION        1
-FROM             ubuntu:14.04
+#FROM             ubuntu:14.04
+FROM             ubuntu:12.04
 MAINTAINER       Sean Boran <sean_at_boran.com>
-ENV REFRESHED_AT 2014-12-04
+ENV REFRESHED_AT 2014-12-13
 
 RUN apt-get -qqy update
 
@@ -14,35 +16,24 @@ RUN ln -sf /bin/true /sbin/initctl
 
 # Todo: php-apc, or php5 cache?
 # todo: make some optional (to save space/time): memcache, compass
-RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install git mysql-client mysql-server apache2 libapache2-mod-php5 pwgen python-setuptools vim-tiny php5-mysql php5-gd php5-curl curl 
+RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install git mysql-client apache2 libapache2-mod-php5 pwgen vim-tiny php5-mysql php5-gd php5-curl curl python-setuptools
+# mysql-server 
 #maybe later: software-properties-common
-RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install php5-memcache memcached 
-RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install ruby-compass
+#RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install php5-memcache memcached 
+#RUN DEBIAN_FRONTEND=noninteractive apt-get -qy install ruby-compass
 RUN DEBIAN_FRONTEND=noninteractive apt-get -q autoclean
 RUN apt-get -q autoclean
 
 # drush: instead of installing a package, pull via composer into /opt/composer
 # http://www.whaaat.com/installing-drush-7-using-composer
-RUN apt-get -q install curl
 RUN curl -sS https://getcomposer.org/installer | php 
 RUN mv composer.phar /usr/local/bin/composer
 RUN COMPOSER_HOME=/opt/composer composer --quiet global require drush/drush:dev-master
 RUN ln -s /opt/composer/vendor/drush/drush/drush /bin/drush
-#RUN sed -i '1i export PATH="$HOME/.composer/vendor/bin:$PATH"' /root/.bashrc
 RUN /bin/drush --version
-
-# Option: Make mysql listen on the outside, might be useful for backups
-# but adds a security risk.
-#RUN sed -i "s/^bind-address/#bind-address/" /etc/mysql/my.cnf
-
 
 WORKDIR /var/www
 # Retrieve drupal: changed - now in start.sh to allow for makes too.
-#RUN mv html html.orig && drush -q dl drupal; mv drupal* html;
-#RUN chmod 755 html/sites/default; mkdir html/sites/default/files; chown -R www-data:www-data html/sites/default/files;
-# Push down a copy of drupal
-ADD ./files/drupal-7  /tmp/drupal
-
 
 # Use a proxy for downloads?
 #ENV PROXY http://proxy.example.ch:80
@@ -50,14 +41,14 @@ ADD ./files/drupal-7  /tmp/drupal
 ## ---
 ## Drupal settings: used by start.sh within the container
 #  can be overridden at run time e.g. -e "DRUPAL_XX=YY"
-ENV DRUPAL_DOCROOT /var/www/html
+ENV DRUPAL_DOCROOT /var/www
 
 ### Install drupal: 
 # A) Use the drupal included the the image (no parameter needed)
 
 # B) a specific vanilla version via drush 
 # What version of drupal is to be installed (see drush sl syntax): drupal-6, drupal-7, drupal-7.x (dev), 8.0.x-dev
-#ENV DRUPAL_VERSION drupal-7
+ENV DRUPAL_VERSION drupal-6
 
 # C) Install via Drush make
 #ENV DRUPAL_MAKE_DIR  drupal-make1
@@ -87,7 +78,7 @@ ENV DRUPAL_INSTALL_PROFILE standard
 #ENV DRUPAL_MAKE_FEATURE_REVERT 1
 
 ## Default Drupal settings
-ENV DRUPAL_SITE_NAME My Drupal Site
+ENV DRUPAL_SITE_NAME My Drupal6 Site
 ENV DRUPAL_SITE_EMAIL drupal@example.ch
 ENV DRUPAL_ADMIN admin
 ENV DRUPAL_ADMIN_PW admin
@@ -108,12 +99,28 @@ RUN easy_install supervisor
 ADD ./files/supervisord.conf /etc/supervisord.conf
 ADD ./files/supervisord.d    /etc/supervisord.d
 ADD ./files/foreground.sh    /etc/apache2/foreground.sh
-ADD ./ubuntu1404/000-default.conf /etc/apache2/sites-enabled/000-default.conf
+#ADD ./ubuntu1404/000-default.conf /etc/apache2/sites-enabled/000-default.conf
 ADD ./start.sh /start.sh
 ADD ./gitwrap.sh /gitwrap.sh
 
-# Automate starting of mysql+apache, allow bash for debugging
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -q -y cron rsyslog
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -q -y vim
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -q -y heirloom-mailx postfix
+ADD ./files/postfix.sh /opt/postfix.sh
+RUN chmod 755 /opt/postfix.sh
+
+
+
+ADD ./files/mods     /etc/mods
+
+# Automate starting of daemons, allow bash for debugging
 RUN chmod 755 /start.sh /etc/apache2/foreground.sh
 EXPOSE 80
 CMD ["/bin/bash", "/start.sh"]
+
+# custom startup file
+# Used top run puppet
+ADD ./custom.sh /custom.sh
+RUN chmod 755 /custom.sh
 

@@ -1,0 +1,15 @@
+#### Building and image from the github sources
+
+docker build -t="boran/drupal6" .
+
+
+#### Run a container
+ docker run -td -p 8004:80 --name drupal8004 boran/drupal6
+
+
+#### Follow the container via logs
+docker logs -f drupal8004
+
+## Now open the webgui http://yourhost.ch:8004 and login as admin/admin.
+
+
