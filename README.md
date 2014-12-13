@@ -3,20 +3,20 @@ docker-drupal
 
 Completely automated Drupal install, with lots of flexibility!
 
-Creates a [Docker](http://docker.io) container for Drupal 7 or 8, using Linux (Ubuntu 14.04), Apache and MySQL:
-- Install Ubuntu 14.04/Apache/Mysql with supervisord startup scripts
+Creates a [Docker](http://docker.io) container for Drupal 6, using Linux (Ubuntu 12.04), Apache and MySQL:
+- Install Ubuntu 14.02/Apache/cron/syslog/postfix with supervisord startup scripts
 - Install composer and drush 
-- Use included Drupal7, or download Drupal, pull from git or via drush makefile
+- Download Drupal, pull from git or via drush makefile
 - Install drupal+DB via a standard or custom profile
 - Most drupal install settings are environment settings when creating a container from the image. See below.
 
 
 # Create a running container
 
-Simplest form, start a D7 container:
+Simplest form, start a D6 container:
 > docker run -td boran/drupal
 
-Simplest form, start a D7 container, interactive shell (run /start.sh when you have the shell to start lamp):
+Simplest form, start a D6 container, interactive shell (run /start.sh when you have the shell to start lamp):
 > docker run -ti boran/drupal /bin/bash
 
 Name the container (--name drupal8003) and give it a public port (8003).
@@ -135,25 +135,20 @@ e.g. create a site specific inherited image with additional stuff such as cron, 
 
 # Building an image (e.g. changing this one)
   Grab sources from Github
- - download a copy of drupal to a subfolder called files/drupal-7
-```
-  cd files
-  drush dl drupal 
-  mv drupal-7.* drupal-7 
-```
+
  - then rebuild:
 ```
-  docker build -t="boran/drupal" .
+  docker build -t="boran/drupal:6" .
   # Interative: stop/delete/rebuild:
-  docker stop drupal8003 && docker rm drupal8003 && docker build -t="boran/drupal" .
+  docker stop drupal8003 && docker rm drupal8003 && docker build -t="boran/drupal:6" .
 
   # Run and look at logs:
-  docker run -td -p 8003:80 --name drupal8003 boran/drupal
+  docker run -td -p 8003:80 --name drupal8003 boran/drupal:6
   docker logs -f drupal8003
 ```
 
 # Thanks 
 The very first iteration was based on a pattern from https://github.com/ricardoamaro/docker-drupal.git
 
-Sean Boran, 25.Sep.2014  https://github.com/Boran/docker-drupal
+Sean Boran, 13.Dec.2014  https://github.com/Boran/docker-drupal
 
