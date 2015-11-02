@@ -129,7 +129,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
       git clone -b ${DRUPAL_MAKE_BRANCH} -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
       #echo "make command: ${DRUPAL_MAKE_CMD}"
       #${DRUPAL_MAKE_CMD}
-      drush make --working-copy --force-gitinfofile --no-recursion --no-core -y --contrib-destination=. ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make /var/tmp/drupal-install
+      drush make --working-copy --force-gitinfofile --no-recursion --no-core -y --contrib-destination=${DRUPAL_MAKE_DIR} ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make /var/tmp/drupal-install
       if [ $? -ne 0 ] ; then
         echo ">>>>> ERROR: drush make failed, aborting <<<<<<"
         exit -1;
@@ -186,12 +186,14 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
 
     # - get custom profile
     if [[ ${DRUPAL_INSTALL_REPO} ]]; then
-      echo "-- download drupal custom profile"
-      echo "45" > $buildstat
-      cd $www/profiles 
-      # todo: INSTALL_REPO: allow for private repos, https and authentication
-      echo "git clone -b ${DRUPAL_INSTALL_PROFILE_BRANCH} -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
-      git clone -b ${DRUPAL_INSTALL_PROFILE_BRANCH} -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}
+      if [[${DRUPAL_INSTALL_REPO} != ${DRUPAL_MAKE_REPO}]]
+        echo "-- download drupal custom profile"
+        echo "45" > $buildstat
+        cd $www/profiles 
+        # todo: INSTALL_REPO: allow for private repos, https and authentication
+        echo "git clone -b ${DRUPAL_INSTALL_PROFILE_BRANCH} -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}"
+        git clone -b ${DRUPAL_INSTALL_PROFILE_BRANCH} -q ${DRUPAL_INSTALL_REPO} ${DRUPAL_INSTALL_PROFILE}
+      fi
     fi
 
     # - run the drupal installer 
