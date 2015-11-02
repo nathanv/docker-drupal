@@ -33,6 +33,7 @@ echo "01. setup apache"
     # regenerate certificate to have a different one on each machine
     make-ssl-cert generate-default-snakeoil --force-overwrite
     a2ensite default-ssl
+    service apache2 reload
   fi
 
 echo "02. check mysql"
