@@ -186,7 +186,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
 
     # - get custom profile
     if [[ ${DRUPAL_INSTALL_REPO} ]]; then
-      if [[${DRUPAL_INSTALL_REPO} != ${DRUPAL_MAKE_REPO}]]
+      if [[ ${DRUPAL_INSTALL_REPO} != ${DRUPAL_MAKE_REPO} ]];
         echo "-- download drupal custom profile"
         echo "45" > $buildstat
         cd $www/profiles 
