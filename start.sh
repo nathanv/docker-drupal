@@ -128,7 +128,7 @@ if [ ! -f $www/sites/default/settings.php -a ! -f /drupal-db-pw.txt ]; then
       git clone -b ${DRUPAL_MAKE_BRANCH} -q ${DRUPAL_MAKE_REPO} ${DRUPAL_MAKE_DIR}
       #echo "make command: ${DRUPAL_MAKE_CMD}"
       #${DRUPAL_MAKE_CMD}
-      drush make ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make /var/tmp/drupal-install
+      drush make --working-copy --force-gitinfofile --no-recursion --no-core -y --contrib-destination=. ${DRUPAL_MAKE_DIR}/${DRUPAL_MAKE_DIR}.make /var/tmp/drupal-install
       if [ $? -ne 0 ] ; then
         echo ">>>>> ERROR: drush make failed, aborting <<<<<<"
         exit -1;
